@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BBS INNER — Onboarding</title>
+
+<!-- ============================================================= -->
+<!-- FONT  ·  Apple's San Francisco via the system font stack      -->
+<!-- (renders SF Pro on Apple devices, graceful fallback elsewhere) -->
+<!-- ============================================================= -->
+
+<!-- ============================================================= -->
+<!-- TAILWIND CSS (via CDN)                                        -->
+<!-- ============================================================= -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:     '#0a0a0d',
+          panel:   '#141015',
+          panel2:  '#1b151c',
+          line:    '#352734',
+          mute:    '#a294a0',
+          /* BBS INNER brand color — keep in sync with :root below */
+          accent:  '#e84d99',
+          accent2: '#f472b6',
+          accent3: '#be185d',
+        },
+        fontFamily: {
+          display: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+          body:    ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Display"', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  :root {
+    /* ===================================================================== */
+    /*  BBS INNER BRAND COLOR  ·  change these 3 hex values to your color    */
+    /*  --accent  = main brand color   --accent2 = lighter   --accent3 = darker */
+    /*  (also mirror them in the tailwind.config block above)                */
+    /* ===================================================================== */
+    --accent:  #e84d99;
+    --accent2: #f472b6;
+    --accent3: #be185d;
+    --sf: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--sf); }
+  h1, h2, h3, .font-display { font-family: var(--sf); letter-spacing: -0.021em; }
+
+  /* ---- Drifting ambient orbs (the page's atmosphere / "movable" feel) ---- */
+  .ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .orb { position: absolute; border-radius: 9999px; filter: blur(110px); }
+  .orb-1 { width: 540px; height: 540px; top: -200px; left: 50%; margin-left: -270px;
+           background: radial-gradient(circle, var(--accent3) 0%, transparent 70%); opacity: .38;
+           animation: drift1 16s ease-in-out infinite alternate; }
+  .orb-2 { width: 480px; height: 480px; bottom: -220px; right: -140px;
+           background: radial-gradient(circle, var(--accent2) 0%, transparent 70%); opacity: .28;
+           animation: drift2 19s ease-in-out infinite alternate; }
+  .orb-3 { width: 360px; height: 360px; top: 40%; left: -160px;
+           background: radial-gradient(circle, var(--accent) 0%, transparent 70%); opacity: .20;
+           animation: drift3 22s ease-in-out infinite alternate; }
+  @keyframes drift1 { from { transform: translate(-30px,-10px) scale(1); } to { transform: translate(40px,30px) scale(1.1); } }
+  @keyframes drift2 { from { transform: translate(20px,10px) scale(1.05); } to { transform: translate(-50px,-40px) scale(1); } }
+  @keyframes drift3 { from { transform: translate(-10px,20px); } to { transform: translate(50px,-30px); } }
+
+  /* ---- Gradient text ---- */
+  .grad-text {
+    background: linear-gradient(115deg, #ffffff 0%, #f9a8d4 50%, var(--accent2) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .brand-text {
+    background: linear-gradient(120deg, var(--accent2) 0%, #ffffff 55%, var(--accent2) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  /* ---- Primary gradient button ---- */
+  .btn-grad {
+    position: relative; overflow: hidden;
+    background: linear-gradient(120deg, var(--accent3) 0%, var(--accent) 55%, var(--accent2) 100%);
+    box-shadow: 0 10px 30px -8px rgba(232,77,153,0.55);
+    transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+  }
+  .btn-grad:hover { transform: translateY(-2px); box-shadow: 0 16px 42px -8px rgba(232,77,153,0.7); filter: brightness(1.07); }
+  .btn-grad:active { transform: translateY(0); }
+  .btn-grad:disabled { opacity: .6; cursor: not-allowed; transform: none; box-shadow: none; }
+  /* moving sheen across the button */
+  .btn-grad::after {
+    content: ''; position: absolute; top: 0; left: -120%; width: 60%; height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,0.35), transparent);
+    transform: skewX(-20deg);
+  }
+  .btn-grad:hover::after { animation: sheen .8s ease forwards; }
+  @keyframes sheen { to { left: 160%; } }
+
+  /* ---- Progress rail ---- */
+  #progress-fill {
+    background: linear-gradient(90deg, var(--accent3), var(--accent2));
+    box-shadow: 0 0 16px 0 rgba(232,77,153,0.75);
+    transition: width .6s cubic-bezier(.6,.05,.1,1);
+  }
+
+  /* ---- Step transitions + staggered child reveals ---- */
+  .step { display: none; }
+  .step.active { display: block; animation: stepFade .3s ease both; }
+  @keyframes stepFade { from { opacity: 0; } to { opacity: 1; } }
+  .reveal { opacity: 0; }
+  .step.active .reveal { animation: revealUp .55s cubic-bezier(.4,0,.2,1) both; }
+  @keyframes revealUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ---- Fields ---- */
+  .field {
+    background: #120d12; border: 1px solid var(--field-border, #352734);
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+  }
+  .field:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(232,77,153,0.2);
+  }
+  .field::placeholder { color: #6a5d66; }
+
+  /* ---- Card lift ---- */
+  .lift { transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+  .lift:hover { transform: translateY(-5px); border-color: rgba(232,77,153,0.55); box-shadow: 0 22px 46px -18px rgba(0,0,0,0.75); }
+
+  /* ---- Embed placeholders ---- */
+  .embed-ph {
+    background:
+      radial-gradient(circle at 30% 30%, rgba(232,77,153,0.18), transparent 55%),
+      radial-gradient(circle at 75% 70%, rgba(244,114,182,0.16), transparent 55%),
+      #120d12;
+  }
+  .play-btn { transition: transform .25s ease, box-shadow .25s ease; }
+  .group:hover .play-btn { transform: scale(1.1); box-shadow: 0 0 36px 0 rgba(232,77,153,0.65); }
+
+  .step-dot { transition: color .4s ease, font-weight .4s ease; }
+  .logo-mark { animation: floaty 5s ease-in-out infinite; }
+  @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+  /* ---- App fades in after the intro ---- */
+  #app { opacity: 0; transition: opacity .6s ease; }
+  #app.ready { opacity: 1; }
+
+  /* ---- Cinematic intro sequence ---- */
+  .intro {
+    position: fixed; inset: 0; z-index: 60; background: #0a0a0d;
+    display: grid; place-items: center; overflow: hidden; cursor: pointer;
+  }
+  .intro-circle {
+    width: 120px; height: 120px; border-radius: 9999px; transform: scale(0);
+    background: radial-gradient(circle at 35% 35%, #f472b6 0%, #e84d99 45%, #9d1450 100%);
+    animation:
+      cPop .7s cubic-bezier(.34,1.56,.64,1) forwards,
+      cGlow 1.2s ease-in-out infinite alternate,
+      cExpand 1.1s cubic-bezier(.7,0,.25,1) 1.5s forwards;
+  }
+  @keyframes cPop  { from { transform: scale(0); } to { transform: scale(1); } }
+  @keyframes cGlow { from { box-shadow: 0 0 60px 8px rgba(190,24,93,.55); } to { box-shadow: 0 0 100px 18px rgba(232,77,153,.8); } }
+  @keyframes cExpand { from { transform: scale(1); } to { transform: scale(28); } }
+
+  .intro-content { position: absolute; text-align: center; padding: 0 1.5rem; }
+  .intro-title {
+    font-family: var(--sf); font-weight: 700; color: #fff;
+    font-size: clamp(1.7rem, 5vw, 2.6rem); letter-spacing: -0.022em;
+    opacity: 0; transform: translateY(16px);
+    text-shadow: 0 4px 30px rgba(0,0,0,.35);
+    animation: tIn .6s cubic-bezier(.4,0,.2,1) 2.0s forwards;
+  }
+  .intro-sub {
+    margin-top: .6rem; color: rgba(255,255,255,.85); font-size: clamp(.95rem, 2.4vw, 1.1rem);
+    opacity: 0; transform: translateY(16px);
+    animation: tIn .55s cubic-bezier(.4,0,.2,1) 2.55s forwards;
+  }
+  @keyframes tIn { to { opacity: 1; transform: translateY(0); } }
+
+  .intro.intro-leaving { animation: introOut .7s ease forwards; pointer-events: none; }
+  @keyframes introOut { to { opacity: 0; transform: scale(1.05); visibility: hidden; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1 !important; }
+    #app { opacity: 1 !important; }
+  }
+</style>
+</head>
+
+<body class="bg-ink text-white min-h-screen antialiased selection:bg-accent/40">
+
+<!-- ============================================================= -->
+<!-- CINEMATIC INTRO  (plays once on a fresh visit)                -->
+<!-- ============================================================= -->
+<div id="intro" class="intro" aria-hidden="true">
+  <div class="intro-circle"></div>
+  <div class="intro-content">
+    <p class="intro-title">Welcome to BBS INNER</p>
+    <p class="intro-sub">Let's get you set up</p>
+  </div>
+</div>
+
+<div class="ambient">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<main id="app" class="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-10 sm:py-14">
+
+  <!-- ============================================================= -->
+  <!-- BRAND MARK  ·  [BBS]                                          -->
+  <!-- ============================================================= -->
+  <header class="w-full max-w-2xl mb-7 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <span class="logo-mark select-none inline-grid place-items-center h-10 w-10 rounded-2xl font-display font-bold text-sm text-white"
+            style="background: linear-gradient(150deg, var(--accent2) 0%, var(--accent) 52%, var(--accent3) 100%); box-shadow: 0 6px 18px -4px rgba(232,77,153,0.55);">BBS</span>
+      <span class="h-6 w-px bg-line"></span>
+      <div class="leading-tight">
+        <p class="font-display font-semibold text-[15px] tracking-tight">BBS INNER</p>
+        <p class="text-[11px] text-mute tracking-[0.18em] uppercase">Member Onboarding</p>
+      </div>
+    </div>
+    <span id="step-counter" class="text-xs text-mute font-medium">Step 1 of 5</span>
+  </header>
+
+  <!-- ============================================================= -->
+  <!-- PROGRESS RAIL                                                 -->
+  <!-- ============================================================= -->
+  <div class="w-full max-w-2xl mb-7">
+    <div class="h-1.5 w-full rounded-full bg-line/60 overflow-hidden">
+      <div id="progress-fill" class="h-full w-[20%] rounded-full"></div>
+    </div>
+    <div id="progress-labels" class="mt-3 hidden sm:flex justify-between text-[11px] font-medium text-mute"></div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- ONBOARDING CARD                                               -->
+  <!-- ============================================================= -->
+  <section class="w-full max-w-2xl">
+    <div class="relative rounded-3xl border border-line bg-panel/80 backdrop-blur-xl p-6 sm:p-10 shadow-2xl shadow-black/50">
+
+      <!-- ────────────────────────────────────────────────────────── -->
+      <!-- STEP 1 · WELCOME + ACCOUNT CREATION                        -->
+      <!-- ────────────────────────────────────────────────────────── -->
+      <div class="step" data-step="1">
+        <p class="reveal text-xs font-semibold tracking-[0.2em] text-accent2 uppercase mb-3">Welcome aboard</p>
+        <h1 class="reveal text-3xl sm:text-4xl font-bold leading-[1.1] mb-2">
+          Let's get you <span class="grad-text">set up.</span>
+        </h1>
+        <p class="reveal text-mute text-[15px] mb-7 max-w-lg">
+          You're in. Create your account and we'll take it from here — the whole thing takes about two minutes.
+        </p>
+
+        <div class="space-y-4">
+          <div class="reveal grid sm:grid-cols-2 gap-4">
+            <div>
+              <label for="firstName" class="block text-sm font-medium mb-2">First name</label>
+              <input id="firstName" type="text" autocomplete="given-name" placeholder="Jordan"
+                class="field w-full rounded-xl px-4 py-3 text-[15px]" />
+            </div>
+            <div>
+              <label for="lastName" class="block text-sm font-medium mb-2">Last name</label>
+              <input id="lastName" type="text" autocomplete="family-name" placeholder="Rivera"
+                class="field w-full rounded-xl px-4 py-3 text-[15px]" />
+            </div>
+          </div>
+          <div class="reveal">
+            <label for="email" class="block text-sm font-medium mb-2">Email address</label>
+            <input id="email" type="email" autocomplete="email" placeholder="jordan@company.com"
+              class="field w-full rounded-xl px-4 py-3 text-[15px]" />
+            <p class="text-[11px] text-mute mt-2">We'll send your portal access here.</p>
+          </div>
+          <p id="step1-error" class="hidden text-sm text-red-400"></p>
+        </div>
+
+        <button data-next type="button" class="reveal btn-grad w-full rounded-xl py-4 font-semibold text-[15px] mt-6">
+          Create my account
+        </button>
+      </div>
+
+      <!-- ────────────────────────────────────────────────────────── -->
+      <!-- STEP 2 · WELCOME VIDEO                                      -->
+      <!-- ────────────────────────────────────────────────────────── -->
+      <div class="step" data-step="2">
+        <h1 class="reveal text-3xl sm:text-4xl font-bold leading-tight mb-2">
+          Welcome to the family, <span class="grad-text greet-name">there</span>!
+        </h1>
+        <p class="reveal text-mute text-[15px] mb-6">Start here. A 4-minute walkthrough of exactly how to win in your first week.</p>
+
+        <!-- Responsive 16:9 video container -->
+        <div class="reveal group relative w-full rounded-2xl overflow-hidden border border-line embed-ph aspect-video grid place-items-center mb-6">
+          <!-- INSERT LOOM / YOUTUBE / VIMEO IFRAME HERE -->
+          <!-- Example:
+          <iframe class="absolute inset-0 w-full h-full" src="https://www.loom.com/embed/YOUR_VIDEO_ID"
+                  frameborder="0" allowfullscreen></iframe>
+          -->
+
+          <!-- Placeholder graphic (remove once iframe is added) -->
+          <div class="text-center px-6">
+            <div class="play-btn mx-auto h-16 w-16 rounded-full btn-grad grid place-items-center mb-4">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <p class="font-display font-semibold">Your welcome video</p>
+            <p class="text-xs text-mute mt-1">Drop your Loom, YouTube, or Vimeo embed here</p>
+          </div>
+        </div>
+
+        <button data-next type="button" class="reveal btn-grad w-full rounded-xl py-4 font-semibold text-[15px]">
+          Next step
+        </button>
+      </div>
+
+      <!-- ────────────────────────────────────────────────────────── -->
+      <!-- STEP 3 · TALLY QUESTIONNAIRE                                -->
+      <!-- ────────────────────────────────────────────────────────── -->
+      <div class="step" data-step="3">
+        <h1 class="reveal text-3xl sm:text-4xl font-bold leading-tight mb-2">Tell us a bit about you</h1>
+        <p class="reveal text-mute text-[15px] mb-6">This quick intake shapes what we build for you. Take your time — it's worth it.</p>
+
+        <!-- Seamless Tally form embed -->
+        <div class="reveal relative w-full rounded-2xl overflow-hidden border border-line embed-ph mb-6" style="min-height: 460px;">
+          <iframe
+            class="absolute inset-0 w-full h-full"
+            src="https://tally.so/embed/pb7goJ?alignLeft=1&amp;hideTitle=1&amp;transparentBackground=1&amp;dynamicHeight=1"
+            frameborder="0"
+            title="BBS INNER Intake"></iframe>
+        </div>
+
+        <button data-next type="button" class="reveal btn-grad w-full rounded-xl py-4 font-semibold text-[15px]">
+          I've completed the form
+        </button>
+      </div>
+
+      <!-- ────────────────────────────────────────────────────────── -->
+      <!-- STEP 4 · CONTENT & FEEDBACK INSIGHTS                        -->
+      <!-- ────────────────────────────────────────────────────────── -->
+      <div class="step" data-step="4">
+        <h1 class="reveal text-3xl sm:text-4xl font-bold leading-tight mb-2">Help us tailor your experience</h1>
+        <p class="reveal text-mute text-[15px] mb-6">A few honest answers here let us customize your journey from day one. There are no wrong answers.</p>
+
+        <div class="space-y-5">
+          <div class="reveal">
+            <label for="q1" class="block text-sm font-medium mb-2">What are you most excited to achieve with us?</label>
+            <textarea id="q1" rows="3" placeholder="The outcome that would make this a no-brainer win…"
+              class="field w-full rounded-xl px-4 py-3 text-[15px] resize-none"></textarea>
+          </div>
+          <div class="reveal">
+            <label for="q2" class="block text-sm font-medium mb-2">What is the #1 specific bottleneck we can help you solve right now?</label>
+            <textarea id="q2" rows="3" placeholder="The one thing currently holding you back…"
+              class="field w-full rounded-xl px-4 py-3 text-[15px] resize-none"></textarea>
+          </div>
+          <p id="step4-error" class="hidden text-sm text-red-400"></p>
+        </div>
+
+        <button data-next type="button" class="reveal btn-grad w-full rounded-xl py-4 font-semibold text-[15px] mt-6">
+          Submit &amp; continue
+        </button>
+      </div>
+
+      <!-- ────────────────────────────────────────────────────────── -->
+      <!-- STEP 5 · FINAL HUB                                          -->
+      <!-- ────────────────────────────────────────────────────────── -->
+      <div class="step" data-step="5">
+        <div class="reveal inline-flex items-center gap-2 rounded-full bg-accent/10 border border-accent/30 px-3 py-1 text-xs font-medium text-accent2 mb-4">
+          <span class="h-1.5 w-1.5 rounded-full bg-accent2"></span> Onboarding complete
+        </div>
+        <h1 class="reveal text-3xl sm:text-4xl font-bold leading-tight mb-2">
+          You're official, <span class="grad-text greet-name">there</span>! Welcome aboard.
+        </h1>
+        <p class="reveal text-mute text-[15px] mb-7">Two doors are now open. Step through both to get the most out of your first week.</p>
+
+        <div class="grid sm:grid-cols-2 gap-4">
+          <!-- Card 1 · Discord -->
+          <div class="reveal lift rounded-2xl border border-line bg-panel2 p-6 flex flex-col">
+            <div class="h-12 w-12 rounded-xl bg-accent/15 border border-accent/30 grid place-items-center mb-4">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#f472b6"><path d="M19.3 5.3A16 16 0 0 0 15.5 4l-.2.4a12 12 0 0 1 3.4 1.7 11 11 0 0 0-9.4 0A12 12 0 0 1 12.7 4.4L12.5 4a16 16 0 0 0-3.8 1.3C5.6 9 5 12.6 5.2 16.2a16 16 0 0 0 4.8 2.4l.4-.6a10 10 0 0 1-1.6-.8l.4-.3a8 8 0 0 0 6.8 0l.4.3a10 10 0 0 1-1.6.8l.4.6a16 16 0 0 0 4.8-2.4c.3-4.2-.6-7.8-2.7-10.9zM9.7 14c-.7 0-1.3-.7-1.3-1.5S9 11 9.7 11s1.3.7 1.3 1.5S10.4 14 9.7 14zm4.6 0c-.7 0-1.3-.7-1.3-1.5S13.6 11 14.3 11s1.3.7 1.3 1.5S15 14 14.3 14z"/></svg>
+            </div>
+            <h3 class="font-display font-semibold text-lg mb-1">Join the Inner Circle</h3>
+            <p class="text-mute text-sm mb-5 flex-1">The private Discord where daily communication, support, and wins happen. This is your home base.</p>
+            <!-- INSERT DISCORD INVITE LINK HERE -->
+            <a href="#" target="_blank" rel="noopener" class="btn-grad rounded-xl py-3 text-center font-semibold text-[15px]">
+              Join the Discord →
+            </a>
+          </div>
+
+          <!-- Card 2 · Training Modules (WAP) -->
+          <div class="reveal lift rounded-2xl border border-line bg-panel2 p-6 flex flex-col">
+            <div class="h-12 w-12 rounded-xl bg-accent/15 border border-accent/30 grid place-items-center mb-4">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2"><path d="m23 7-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            </div>
+            <h3 class="font-display font-semibold text-lg mb-1">Access Your Training</h3>
+            <p class="text-mute text-sm mb-5 flex-1">Your full video modules and course curriculum. Start with Module 1 — it sets up everything else.</p>
+            <!-- Whop access / training portal link -->
+            <a href="https://whop.com/checkout/plan_Q3CLc2Mv1BIfE" target="_blank" rel="noopener" class="rounded-xl py-3 text-center font-semibold text-[15px] border border-accent/50 text-white hover:bg-accent/10 transition-colors">
+              Open Training Modules →
+            </a>
+          </div>
+        </div>
+
+        <p class="reveal text-center text-mute text-sm mt-8">That's it! Your onboarding is complete. See you on the inside.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Discreet reset for testing — remove before going live -->
+  <button id="reset-btn" type="button" class="mt-8 text-[11px] text-mute/60 hover:text-mute transition-colors">Restart onboarding</button>
+</main>
+
+<!-- ============================================================= -->
+<!-- APP LOGIC (vanilla JS)                                         -->
+<!-- ============================================================= -->
+<!-- Supabase client — sends each submission to your database -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ===================================================================== */
+  /*  SUPABASE  ·  paste your two values between the quotes below.          */
+  /*  In Supabase dashboard:  Settings → API Keys                          */
+  /*    SUPABASE_URL = your Project URL   (https://xxxxx.supabase.co)       */
+  /*    SUPABASE_KEY = your Publishable key (starts with  sb_publishable_)  */
+  /*  Leave them blank and the page still works — it just won't save.      */
+  /* ===================================================================== */
+  const SUPABASE_URL = 'https://hggxaaplpyybfhgtzyxb.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_XZc1WH0BZ6uV6fXgcZEQYA_fVLmj4Pf';
+
+  let sb = null;
+  if (SUPABASE_URL && SUPABASE_KEY && window.supabase) {
+    try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) {}
+  }
+  // Saves/updates this person's single row. Fire-and-forget — never blocks onboarding.
+  function saveToSupabase() {
+    if (!sb) return;
+    sb.from('onboarding').upsert({
+      id:         state.submissionId,
+      first_name: state.firstName,
+      last_name:  state.lastName,
+      email:      state.email,
+      q1:         state.insights.q1,
+      q2:         state.insights.q2,
+    }).then(function (res) {
+      if (res && res.error) console.error('Supabase save failed:', res.error.message);
+    });
+  }
+
+  const TOTAL_STEPS = 5;
+  const STORE_KEY = 'bbs_inner_onboarding_v1';
+  const STEP_LABELS = ['Account', 'Welcome', 'Intake', 'Insights', 'Portal'];
+
+  const defaultState = {
+    step: 1,
+    submissionId: '',
+    firstName: '', lastName: '', email: '',
+    insights: { q1: '', q2: '' },
+  };
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      return raw ? Object.assign({}, defaultState, JSON.parse(raw)) : Object.assign({}, defaultState);
+    } catch (e) { return Object.assign({}, defaultState); }
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }
+
+  let state = load();
+  if (!state.submissionId) {
+    state.submissionId = (window.crypto && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : String(Date.now()) + '-' + Math.random().toString(16).slice(2);
+    save();
+  }
+
+  const steps = Array.from(document.querySelectorAll('.step'));
+  const progressFill = document.getElementById('progress-fill');
+  const stepCounter = document.getElementById('step-counter');
+  const labelWrap = document.getElementById('progress-labels');
+
+  // Stagger delays for reveal children (per step)
+  steps.forEach(step => {
+    Array.from(step.querySelectorAll('.reveal')).forEach((el, i) => {
+      el.style.animationDelay = (i * 0.07) + 's';
+    });
+  });
+
+  // Progress labels
+  STEP_LABELS.forEach((label, i) => {
+    const el = document.createElement('span');
+    el.className = 'step-dot'; el.dataset.index = i + 1; el.textContent = label;
+    labelWrap.appendChild(el);
+  });
+  const labelEls = Array.from(labelWrap.children);
+
+  function applyGreeting() {
+    const name = (state.firstName || 'there').trim() || 'there';
+    document.querySelectorAll('.greet-name').forEach(el => { el.textContent = name; });
+  }
+
+  function updateProgress() {
+    const pct = Math.round((state.step / TOTAL_STEPS) * 100);
+    progressFill.style.width = pct + '%';
+    stepCounter.textContent = 'Step ' + state.step + ' of ' + TOTAL_STEPS;
+    labelEls.forEach(el => {
+      const idx = parseInt(el.dataset.index, 10);
+      el.style.color = idx <= state.step ? '#ffffff' : '';
+      el.style.fontWeight = idx === state.step ? '600' : '500';
+    });
+  }
+
+  function showStep(n) {
+    steps.forEach(s => s.classList.toggle('active', parseInt(s.dataset.step, 10) === n));
+    updateProgress();
+    applyGreeting();
+    const heading = steps.find(s => parseInt(s.dataset.step, 10) === n)?.querySelector('h1');
+    if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus({ preventScroll: true }); }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goToStep(n) {
+    n = Math.max(1, Math.min(TOTAL_STEPS, n));
+    state.step = n; save();
+    showStep(n);
+  }
+
+  function flagError(input) {
+    input.style.setProperty('--field-border', '#ef4444');
+    input.addEventListener('input', () => input.style.removeProperty('--field-border'), { once: true });
+  }
+  function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+  function validateStep1() {
+    const first = document.getElementById('firstName');
+    const last  = document.getElementById('lastName');
+    const email = document.getElementById('email');
+    const err   = document.getElementById('step1-error');
+    const missing = [];
+    [['First name', first], ['Last name', last]].forEach(([name, el]) => {
+      if (!el.value.trim()) { flagError(el); missing.push(name); }
+    });
+    if (!isEmail(email.value.trim())) { flagError(email); missing.push('a valid email'); }
+    if (missing.length) {
+      err.textContent = 'Please add ' + missing.join(', ') + ' to continue.';
+      err.classList.remove('hidden');
+      return false;
+    }
+    err.classList.add('hidden');
+    state.firstName = first.value.trim();
+    state.lastName  = last.value.trim();
+    state.email     = email.value.trim();
+    save();
+    saveToSupabase();
+    return true;
+  }
+
+  function validateStep4() {
+    const q1 = document.getElementById('q1');
+    const q2 = document.getElementById('q2');
+    const err = document.getElementById('step4-error');
+    const empty = [q1, q2].filter(f => !f.value.trim());
+    if (empty.length) {
+      empty.forEach(flagError);
+      err.textContent = 'A sentence or two on each helps us tailor things — please fill in both.';
+      err.classList.remove('hidden');
+      return false;
+    }
+    err.classList.add('hidden');
+    state.insights = { q1: q1.value.trim(), q2: q2.value.trim() };
+    save();
+    saveToSupabase();
+    return true;
+  }
+
+  function restoreFields() {
+    const map = {
+      firstName: state.firstName, lastName: state.lastName, email: state.email,
+      q1: state.insights.q1, q2: state.insights.q2,
+    };
+    Object.entries(map).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el && val) el.value = val;
+    });
+  }
+
+  // Next buttons with per-step validation gates
+  document.querySelectorAll('[data-next]').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const current = parseInt(btn.closest('.step').dataset.step, 10);
+      if (current === 1 && !validateStep1()) return;
+      if (current === 4 && !validateStep4()) return;
+      goToStep(current + 1);
+    });
+  });
+
+  // Reset
+  document.getElementById('reset-btn').addEventListener('click', function () {
+    try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+    location.reload();
+  });
+
+  function startApp() {
+    restoreFields();
+    showStep(state.step); // adds .active → fires the staggered reveal cascade
+  }
+
+  // ---- Intro orchestration ----
+  const intro = document.getElementById('intro');
+  const app = document.getElementById('app');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const freshVisit = state.step === 1 && !state.firstName;
+
+  function revealApp() {
+    app.classList.add('ready');
+    startApp();
+  }
+
+  function endIntro() {
+    if (!intro || intro.dataset.done) return;
+    intro.dataset.done = '1';
+    intro.classList.add('intro-leaving');
+    setTimeout(() => { if (intro && intro.parentNode) intro.parentNode.removeChild(intro); }, 700);
+    revealApp();
+  }
+
+  if (reduceMotion || !freshVisit) {
+    // Returning client or reduced motion → skip the cinematic open
+    if (intro && intro.parentNode) intro.parentNode.removeChild(intro);
+    revealApp();
+  } else {
+    setTimeout(endIntro, 3600);     // let the sequence play, then hand off to the app
+    intro.addEventListener('click', endIntro); // tap anywhere to skip
+  }
+})();
+</script>
+</body>
+</html>
