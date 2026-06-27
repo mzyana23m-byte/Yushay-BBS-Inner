@@ -416,9 +416,40 @@
 <!-- ============================================================= -->
 <!-- APP LOGIC (vanilla JS)                                         -->
 <!-- ============================================================= -->
+<!-- Supabase client — sends each submission to your database -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function () {
   'use strict';
+
+  /* ===================================================================== */
+  /*  SUPABASE  ·  paste your two values between the quotes below.          */
+  /*  In Supabase dashboard:  Settings → API Keys                          */
+  /*    SUPABASE_URL = your Project URL   (https://xxxxx.supabase.co)       */
+  /*    SUPABASE_KEY = your Publishable key (starts with  sb_publishable_)  */
+  /*  Leave them blank and the page still works — it just won't save.      */
+  /* ===================================================================== */
+  const SUPABASE_URL = '';
+  const SUPABASE_KEY = '';
+
+  let sb = null;
+  if (SUPABASE_URL && SUPABASE_KEY && window.supabase) {
+    try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) {}
+  }
+  // Saves/updates this person's single row. Fire-and-forget — never blocks onboarding.
+  function saveToSupabase() {
+    if (!sb) return;
+    sb.from('onboarding').upsert({
+      id:         state.submissionId,
+      first_name: state.firstName,
+      last_name:  state.lastName,
+      email:      state.email,
+      q1:         state.insights.q1,
+      q2:         state.insights.q2,
+    }).then(function (res) {
+      if (res && res.error) console.error('Supabase save failed:', res.error.message);
+    });
+  }
 
   const TOTAL_STEPS = 5;
   const STORE_KEY = 'bbs_inner_onboarding_v1';
@@ -426,6 +457,7 @@
 
   const defaultState = {
     step: 1,
+    submissionId: '',
     firstName: '', lastName: '', email: '',
     insights: { q1: '', q2: '' },
   };
@@ -439,6 +471,12 @@
   function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }
 
   let state = load();
+  if (!state.submissionId) {
+    state.submissionId = (window.crypto && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : String(Date.now()) + '-' + Math.random().toString(16).slice(2);
+    save();
+  }
 
   const steps = Array.from(document.querySelectorAll('.step'));
   const progressFill = document.getElementById('progress-fill');
@@ -517,6 +555,7 @@
     state.lastName  = last.value.trim();
     state.email     = email.value.trim();
     save();
+    saveToSupabase();
     return true;
   }
 
@@ -534,6 +573,7 @@
     err.classList.add('hidden');
     state.insights = { q1: q1.value.trim(), q2: q2.value.trim() };
     save();
+    saveToSupabase();
     return true;
   }
 
